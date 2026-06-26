@@ -310,3 +310,161 @@ app/
 - Map requires internet access unless offline tile support is added later.
 - Telemetry parser currently covers the main fields only.
 - It does not yet show detailed INAV arming disabled reasons or full navigation error states.
+
+
+# UAV Ground Control Station Using LoRa
+
+## Overview
+
+This project is a Ground Control Station (GCS) application developed for a UAV system using LoRa communication. The system is designed to monitor UAV telemetry, display GPS data, manage waypoint missions, and exchange data between the UAV and the ground station through LoRa modules.
+
+The project is part of the specialized project topic:
+
+**Building a UAV System and Flight Planning Software Using LoRa Communication**
+
+## Main Features
+
+* Connect to the LoRa ground module through a COM/UART port
+* Receive telemetry data from the UAV
+* Display GPS information such as latitude, longitude, altitude, and satellite count
+* Display battery voltage, flight mode, arm/disarm status, and connection status
+* Parse MSP packets from the Flight Controller running INAV firmware
+* Support waypoint creation and mission planning on the GCS interface
+* Monitor UAV status in real time or near real time
+
+## System Architecture
+
+The system consists of two main parts:
+
+### UAV Side
+
+* Flight Controller: Flywoo GOKU F722 Pro V2
+* Firmware: INAV
+* GPS module: M10/M8N
+* LoRa module: E32
+* ESC 4-in-1
+* Brushless motors
+* LiPo 3S battery
+
+### Ground Station Side
+
+* Computer running the GCS software
+* LoRa E32 ground module
+* UART/COM connection
+* Graphical user interface for telemetry and waypoint management
+
+## Data Flow
+
+Telemetry data flow:
+
+```text
+GPS / Sensors / Battery
+→ Flight Controller running INAV
+→ MSP packet
+→ UART
+→ LoRa UAV module
+→ LoRa Ground module
+→ GCS
+→ Telemetry display
+```
+
+Mission data flow:
+
+```text
+User creates waypoint on GCS
+→ GCS builds mission data
+→ LoRa Ground module
+→ LoRa UAV module
+→ Flight Controller
+→ INAV updates mission
+```
+
+## Technologies Used
+
+* Python
+* PySide6 / PyQt
+* MSP - MultiWii Serial Protocol
+* UART / Serial communication
+* LoRa E32
+* INAV Firmware
+
+## Main Files
+
+### `msp.py`
+
+Defines MSP command IDs and helper functions for building MSP packets.
+It also includes functions for reading little-endian data from MSP payloads.
+
+### `msp_parser.py`
+
+Receives raw bytes from the serial/LoRa layer, detects MSP packets, checks checksum, parses command payloads, and updates telemetry data.
+
+### `telemetry_state.py`
+
+Stores the latest telemetry state of the UAV, including GPS position, altitude, speed, battery voltage, flight mode, arm status, link quality, and home position.
+
+## Data Transmitted Through LoRa
+
+The system uses LoRa to transmit small data packets such as:
+
+* GPS telemetry
+* Latitude and longitude
+* Altitude
+* Battery voltage
+* Flight mode
+* Arm/disarm status
+* Connection status
+* Waypoint and mission commands
+
+The system does not transmit images or real-time video through LoRa because LoRa has low bandwidth and is more suitable for small telemetry and command data.
+
+## Installation
+
+Install the required Python libraries:
+
+```bash
+pip install PySide6 pyserial
+```
+
+## Running the Application
+
+Run the main application file:
+
+```bash
+python main.py
+```
+
+Note: The main file name may be different depending on the actual project structure.
+
+## Current Results
+
+The current system has achieved the following:
+
+* Built a GCS interface for UAV monitoring
+* Established two-way LoRa communication between UAV and GCS
+* Received and displayed telemetry data on the GCS
+* Parsed MSP data from the Flight Controller running INAV
+* Supported waypoint creation and mission planning at the software level
+
+## Limitations
+
+* The system does not transmit image or video data
+* End-to-end encryption has not been implemented
+* Strong device authentication has not been implemented
+* Full outdoor autonomous waypoint flight testing has not been completed
+* Detailed measurements of LoRa bandwidth, latency, RSSI, and packet loss have not been fully collected
+
+## Future Development
+
+* Add data encryption and device authentication
+* Measure LoRa latency, RSSI, packet loss, and communication range in real field tests
+* Improve waypoint upload and mission execution
+* Optimize LoRa packet size and transmission reliability
+* Add support for multiple UAVs
+* Integrate additional sensors such as camera, environmental sensors, or distance sensors
+* Combine LoRa with WiFi, 4G/5G, or mesh networks for higher bandwidth applications
+
+## Project Status
+
+This project currently focuses on UAV telemetry, LoRa communication, and GCS-based waypoint mission planning. Image transmission, video streaming, cloud integration, and advanced security features are considered future improvements.
+
